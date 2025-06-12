@@ -57,6 +57,7 @@ class Experiment:
             print("No summary report found for this experiment.")
             return None
 
+
 class SummaryReport:
     def __init__(self, jsonfile):
         with open(jsonfile) as f:
@@ -68,7 +69,7 @@ class SummaryReport:
 
             self.totalcycles = self.summarydata["Total Cycles Consumed"]["val"]
             self.totalinsts = self.summarydata["Total Instructions Retired"]["val"]
-            
+
     def getTotalCycles(self):
         """Returns the total cycles from the summary report"""
         return self.totalcycles
@@ -80,10 +81,10 @@ class SummaryReport:
     def getMetricKeys(self, regex_pattern=None):
         """Returns a list of metric keys from the summary report, optionally filtered by regex pattern"""
         all_keys = list(self.summarydata.keys())
-        
+
         if regex_pattern is None:
             return all_keys
-        
+
         try:
             pattern = re.compile(regex_pattern)
             return [key for key in all_keys if pattern.search(key)]
@@ -98,14 +99,19 @@ class SummaryReport:
     def printMetrics(self, regex_pattern=None):
         """Prints all metrics in the summary report, optionally filtered by regex pattern"""
         keys = self.getMetricKeys(regex_pattern)
-        locale.setlocale(locale.LC_ALL, '')
+        locale.setlocale(locale.LC_ALL, "")
         for key in keys:
             value = self.getMetricValue(key)
             try:
-                value_str = locale.format_string("%d", value, grouping=True) if isinstance(value, int) else str(value)
+                value_str = (
+                    locale.format_string("%d", value, grouping=True)
+                    if isinstance(value, int)
+                    else str(value)
+                )
             except Exception:
                 value_str = str(value)
             print(f"{key}: {value_str}")
+
 
 class AtlasConstants:
     AE_GLOBAL_API = "https://gyrfalcon.api.mips.com"
@@ -423,16 +429,17 @@ class AtlasExplorer:
         expname: name of the experiment, if None, it will be generated from the elf file name and timestamp
         unpack: if True, unpack the reports after the experiment is created
         """
-        if not os.path.exists(elf):
-            print("Error: specified elf file does not exist\nELF: " + elf)
+
+        if not os.path.exists(elf[0]):
+            print("Error: specified elf file does not exist\nELF: " + elf[0])
             sys.exit(1)
-            
+
         now = datetime.now()  # Get current datetime
         self.experiment_timestamp = now.strftime("%y%m%d_%H%M%S")
 
         if expname is None:
             expname = (
-                os.path.splitext(os.path.basename(elf))[0]
+                os.path.splitext(os.path.basename(elf[0]))[0]
                 + "_"
                 + self.experiment_timestamp
             )
@@ -459,7 +466,7 @@ class AtlasExplorer:
         self.expdir = expdir
 
         # Set the absolute path to the elf file
-        elfAbsPath = os.path.abspath(elf)
+        elfAbsPath = os.path.abspath(elf[0])
         # generate a config file and write it out.
         date_string = now.strftime("%y%m%d_%H%M%S")
         experimentConfigDict = {
@@ -507,14 +514,15 @@ class AtlasExplorer:
         workload_tar_path = os.path.join(expdir, "workload.exp")
         with tarfile.open(workload_tar_path, "w:gz") as tar:
             tar.add(os.path.join(expdir, "config.json"), arcname="config.json")
-            tar.add(elf, arcname=os.path.basename(elf))
+            tar.add(elf[0], arcname=os.path.basename(elf[0]))
+            tar.add(elf[1], arcname=os.path.basename(elf[1]))
 
         url = self.config.gateway + "/createsignedurls"
         myobj = {
             "apikey": self.config.apikey,
             "channel": self.config.channel,
             "exp-uuid": expuuid,
-            "workload": elf,
+            "workload": elf[0],
             "core": core,
             "action": "experiment",
         }
@@ -576,7 +584,7 @@ class AtlasExplorer:
                 )
                 if self.verbose:
                     print("Unpacking package")
-                destdir = self.rootpath #os.path.join(self.rootpath, expdir)
+                destdir = self.rootpath  # os.path.join(self.rootpath, expdir)
                 with tarfile.open(reporttar, "r:gz") as tar:
                     tar.extractall(destdir)
                     tar.close()
@@ -609,7 +617,6 @@ class AtlasExplorer:
             return
 
         for filename in os.listdir(summarydir):
-
             if "_roi_" in filename and filename.endswith(".json"):
                 filepath = os.path.join(summarydir, filename)
                 with open(filepath) as f:
@@ -619,7 +626,7 @@ class AtlasExplorer:
                         print("Deleting invalid summary report: " + filepath)
                     os.remove(filepath)
 
-                    
+
 # # end class def
 
 
