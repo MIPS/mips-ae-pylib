@@ -490,7 +490,7 @@ class AtlasExplorer:
             "otp": "".join([chr(x) for x in get_random_bytes(32)]),
             "version": "1.0.0",
             "arch": {
-                "num_threads": 1,
+                "num_threads": 2,
             },
             "elfPath": elfAbsPath,
             "clientType": "python",

@@ -15,8 +15,10 @@ myinst.setRootExperimentDirectory("myexperiments")
 
 # run an experiment with your elf / core selelection
 # returns exp sub dir name
+
+# print("Current working directory:", os.getcwd())
 experiment = myinst.createExperiment(
-    ["mandelbrot_rv64_O0.elf", "memcpy_O1.elf"], "I8500"
+    ["mandelbrot_rv64_O0.elf", "memcpy_rv64.elf"], "shogun_2t"
 )
 if experiment.getRoot() is None:
     print("error creating experiment! Check your setup")
