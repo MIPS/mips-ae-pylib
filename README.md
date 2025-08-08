@@ -23,6 +23,7 @@ Accelerate analysis of Atlas simulation experiments: run workloads, collect repo
 12. Troubleshooting
 13. Extending (New Metrics / Thresholds)
 14. Glossary
+15. Notebook Quick Tutorial
 
 ---
 
@@ -398,6 +399,74 @@ Provided under the project’s LICENSE (see repository root). (Add details if mi
 - [ ] Generated a rich HTML report
 - [ ] Compared against a baseline
 - [ ] Read through derived metrics list
+
+---
+
+## 📓 15. Notebook Quick Tutorial
+
+This short guide shows how to run the included notebooks for single‑core, multi‑core, and baseline‑diff workflows.
+
+### Prerequisites
+- Python 3.12
+- A virtual environment (recommended: `uv`)
+- Install notebook + reporting extras
+
+```bash
+uv venv
+source .venv/bin/activate
+uv pip install -e .[reporting,notebook]
+```
+
+### 1) Configure credentials (pick one)
+- Interactive (saves a user config file):
+      ```bash
+      uv run atlasexplorer/atlasexplorer.py configure
+      ```
+- Or set an environment variable for the current shell:
+      ```bash
+      export MIPS_ATLAS_CONFIG=<apikey>:<channel>:<region>
+      ```
+- Or fill in the first cell in each notebook (we added a “Configure API credentials” cell at the top that sets `MIPS_ATLAS_CONFIG` and can write `~/.config/mips/atlaspy/config.json`).
+
+### 2) Open the notebooks
+Open with Jupyter:
+```bash
+jupyter lab
+# or
+jupyter notebook
+```
+Then navigate to the `notebooks/` folder and open one of:
+- `ae_singlecore.ipynb` — run a single ELF workload on a single-core target
+- `ae_multicore.ipynb` — run multiple ELFs on a multi-core target
+- `ae_multicore_diff_report.ipynb` — run multi-core and produce a ZIP bundle, optionally diffed against a baseline
+- `summary_exploration.ipynb` — parse an existing `summary.json`, derive metrics, explore in a DataFrame
+
+Using VS Code:
+- Open the repo in VS Code, ensure the Python extension is enabled.
+- Select the project’s virtual environment as the interpreter.
+- Open any notebook under `notebooks/` and run cells with the play button.
+
+### 3) Fill settings and run cells top‑down
+Each notebook starts with two cells:
+1. Configure API credentials — fill `ae_apikey`, `ae_channel`, `ae_region` and run the cell (or skip if you already ran the interactive config or exported the env var).
+2. Settings — adjust `elf`/`elfs`, `core`, `channel`, `expdir`, and (optionally) export options.
+
+Click “Run All” or run each cell in order. The notebook will:
+- Create an experiment directory under `myexperiments/`
+- Upload ELF(s), run the simulation, and download results
+- Locate the newest `reports/summary/summary.json`
+- Optionally export reports next to that `summary.json` when you enable `export` (json/markdown/html/rich-html/zip)
+
+### 4) Where outputs go
+- Experiment tree: `myexperiments/<timestamped_run>/.../reports/summary/summary.json`
+- Exports (if enabled): next to that `summary.json` by default, or to your specified `out` path
+- ZIP bundle (`ae_multicore_diff_report`): includes `report.json`, `report.md`, and a rich HTML file
+
+### Common issues
+- “Reporting extras not installed” when exporting: install `.[reporting]` as shown above.
+- Auth errors: re-run the configure command, verify `MIPS_ATLAS_CONFIG`, or re-run the first config cell.
+- Paths with spaces/parentheses: always quote full paths when using the CLI; in notebooks, prefer `Path(...)`.
+- No `summary.json` found: ensure your ELF path(s) exist and the experiment completed successfully.
 - [ ] Ran test suite successfully
 
 You’re productive once all boxes are checked!
