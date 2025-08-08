@@ -19,12 +19,14 @@ This test will:
 """
 from atlasexplorer import atlasexplorer
 from dotenv import load_dotenv
+import pytest
 import locale
 import os
 
 load_dotenv()
 
 
+@pytest.mark.skipif(not os.environ.get("MIPS_ATLAS_CONFIG"), reason="MIPS_ATLAS_CONFIG not set; skipping cloud-dependent test")
 def test_multicore():
     locale.setlocale(locale.LC_ALL, "")
     # Get credentials from environment variable
