@@ -28,6 +28,7 @@ import argparse
 import locale
 import os
 import sys
+from pathlib import Path
 from atlasexplorer.atlasexplorer import AtlasExplorer, Experiment
 from dotenv import load_dotenv
 
@@ -44,6 +45,17 @@ def main():
     parser.add_argument("--apikey", help="Your ATLAS Explorer API key.")
     parser.add_argument("--region", help="Region")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output.")
+    parser.add_argument(
+        "--export",
+        choices=["json", "markdown", "html", "rich-html", "zip"],
+        help="Export a report after the run in the given format.",
+    )
+    parser.add_argument(
+        "--out",
+        help=(
+            "Output path for the exported report. If omitted, a sensible filename is created next to summary.json."
+        ),
+    )
     args = parser.parse_args()
 
     # Check for configuration: ENV, config file, or CLI args
@@ -79,9 +91,83 @@ def main():
     # Run the experiment (this will upload, execute, and download results)
     experiment.run()
 
-    # Get and print the total cycles from the experiment summary
-    total_cycles = experiment.getSummary().getTotalCycles()
-    print(f"Total Cycles: {total_cycles}")
+    # Locate newest summary.json produced by the just-run experiment
+    exp_path = Path(args.expdir)
+    summary_candidates = list(exp_path.rglob("summary/summary.json"))
+    if not summary_candidates:
+        print("No summary.json found under experiment directory.", file=sys.stderr)
+        sys.exit(2)
+    summary_candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    summary_path = summary_candidates[0]
+    print(f"Produced summary: {summary_path}")
+
+    # Export report if requested
+    if args.export:
+        # Lazy import reporting modules to keep examples usable without extras
+        try:
+            from atlasexplorer.reporting.parser import parse_summary_json
+            from atlasexplorer.reporting.derive import apply_derivations
+            from atlasexplorer.reporting.thresholds import apply_thresholds
+            from atlasexplorer.reporting.export import (
+                export_json,
+                export_markdown,
+                export_html,
+                export_rich_html,
+                export_zip,
+            )
+        except Exception as e:
+            print(
+                "Reporting extras not installed. Install with 'uv pip install -e .[reporting]' to use --export.",
+                file=sys.stderr,
+            )
+            sys.exit(3)
+
+        report = parse_summary_json(str(summary_path))
+        report = apply_derivations(report)
+        report = apply_thresholds(report)
+
+        # Determine output path
+        default_dir = summary_path.parent
+        if args.export == "json":
+            default_name = "report.json"
+        elif args.export == "markdown":
+            default_name = "report.md"
+        elif args.export == "html":
+            default_name = "report.html"
+        elif args.export == "rich-html":
+            default_name = "report_rich.html"
+        else:  # zip
+            default_name = "report_bundle.zip"
+        out_path = Path(args.out) if args.out else (default_dir / default_name)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if args.export == "json":
+            export_json(report, str(out_path))
+        elif args.export == "markdown":
+            export_markdown(report, str(out_path))
+        elif args.export == "html":
+            export_html(report, str(out_path))
+        elif args.export == "rich-html":
+            export_rich_html(report, str(out_path))
+        elif args.export == "zip":
+            export_zip(report, str(out_path), rich=True)
+        print(f"Export written to: {out_path}")
+
+    # Optionally still show a quick KPI
+    # Print total cycles (preserve original example behavior)
+    if not args.export:
+        try:
+            total_cycles = experiment.getSummary().getTotalCycles()
+            print(f"Total Cycles: {total_cycles}")
+        except Exception:
+            pass
+    else:
+        try:
+            total_cycles_metric = next((m for m in report.metrics if m.name == "Total Cycles Consumed"), None)
+            if total_cycles_metric is not None and total_cycles_metric.value is not None:
+                print(f"Total Cycles: {total_cycles_metric.value}")
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     main()

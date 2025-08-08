@@ -156,21 +156,26 @@ def export_rich_html(report: SummaryReportModel, path: str):
 
 
 def export_zip(report: SummaryReportModel, zip_path: str, rich: bool = True):
-    """Create a zip bundle with JSON, Markdown, and HTML variants.
+    """Create a zip bundle with all standard report formats.
+
+    Contents:
+      - report.json (full model)
+      - report.md (markdown summary)
+      - report.html (rich HTML with charts)
+      - report_basic.html (lightweight HTML without charts)
 
     Args:
         report: model
         zip_path: output zip file path
-        rich: include rich HTML (else basic)
+        rich: retained for backward compatibility; ignored (both HTML variants are included)
     """
     tmpdir = Path(tempfile.mkdtemp(prefix="atlasexp_"))
     try:
         export_json(report, str(tmpdir / 'report.json'))
         export_markdown(report, str(tmpdir / 'report.md'))
-        if rich:
-            export_rich_html(report, str(tmpdir / 'report.html'))
-        else:
-            export_html(report, str(tmpdir / 'report.html'))
+        # Include both HTML variants
+        export_rich_html(report, str(tmpdir / 'report.html'))
+        export_html(report, str(tmpdir / 'report_basic.html'))
         with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
             for f in tmpdir.iterdir():
                 zf.write(f, arcname=f.name)
