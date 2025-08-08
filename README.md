@@ -39,6 +39,10 @@ uv run examples/ae_singlecore.py --elf resources/mandelbrot_rv64_O0.elf --channe
 
 # After experiment completes, generate a report (summary.json inside experiment dir)
 atlasexplorer-report "myexperiments/<run>/I8500_*/reports/summary/summary.json" --export rich-html --out report.html
+
+# Or export directly from the example runner (adds an export step at the end)
+uv run examples/ae_singlecore.py --elf resources/mandelbrot_rv64_O0.elf --channel development --core "I8500_(1_thread)" --export zip
+uv run examples/ae_multicore.py --elf resources/mandelbrot_rv64_O0.elf resources/memcpy_rv64.elf --channel development --core "I8500_(2_threads)" --export rich-html --out my_report.html
 ```
 
 ---
@@ -129,6 +133,28 @@ uv run examples/ae_multicore.py --elf resources/mandelbrot_rv64_O0.elf resources
 
 Outputs appear under `myexperiments/<timestamped_run>/` including `reports/summary/summary.json`.
 
+### Exporting Reports Directly from Example Runners
+Both example scripts support an optional export step after the run:
+
+Flags:
+- `--export {json,markdown,html,rich-html,zip}`: choose output format
+- `--out <path>`: destination file path (defaults next to `summary.json`)
+
+Examples:
+```bash
+# Rich HTML next to the produced summary.json
+uv run examples/ae_singlecore.py --elf resources/mandelbrot_rv64_O0.elf \
+      --channel development --core "I8500_(1_thread)" --export rich-html
+
+# ZIP bundle including all formats (json, markdown, basic HTML, rich HTML)
+uv run examples/ae_multicore.py --elf resources/mandelbrot_rv64_O0.elf resources/memcpy_rv64.elf \
+      --channel development --core "I8500_(2_threads)" --export zip --out my_bundle.zip
+```
+Note: Using `--export` requires the reporting extras to be installed:
+```bash
+uv pip install -e .[reporting]
+```
+
 ---
 
 ## 📊 6. Reporting & KPIs (`atlasexplorer-report`)
@@ -217,6 +243,22 @@ Legend is printed below tables in CLI output.
 Rich HTML currently includes a KPI grid, execution mix pie, and branch accuracy gauge (conditional on available data).
 ```bash
 atlasexplorer-report "new_run/summary.json" --baseline "baseline_run/summary.json"
+```
+
+### ZIP Bundle Contents
+When using either `atlasexplorer-report --export-zip` or the example runners with `--export zip`, the ZIP includes:
+- `report.json`
+- `report.md`
+- `report.html` (rich, with charts)
+- `report_basic.html` (lightweight)
+
+You can also export directly from the example runners as a convenience:
+```bash
+uv run examples/ae_singlecore.py --elf resources/mandelbrot_rv64_O0.elf \
+      --channel development --core "I8500_(1_thread)" --export zip
+
+uv run examples/ae_multicore.py --elf resources/mandelbrot_rv64_O0.elf resources/memcpy_rv64.elf \
+      --channel development --core "I8500_(2_threads)" --export rich-html --out out/report.html
 ```
 ## 🔁 9. Common Workflows
 
