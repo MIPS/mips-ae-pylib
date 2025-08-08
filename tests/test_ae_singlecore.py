@@ -19,15 +19,17 @@ This test will:
 """
 from atlasexplorer.atlasexplorer import AtlasExplorer, Experiment
 import locale
+import os
+import pytest
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
+@pytest.mark.skipif(not os.environ.get("MIPS_ATLAS_CONFIG"), reason="MIPS_ATLAS_CONFIG not set; skipping cloud-dependent test")
 def test_singlecore():
     locale.setlocale(locale.LC_ALL, "")
     # Get credentials from environment variable
-    import os
     config_str = os.environ.get("MIPS_ATLAS_CONFIG", "")
     try:
         apikey, channel, region = config_str.split(":")

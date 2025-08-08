@@ -1,3 +1,9 @@
+import importlib.util, pytest
+
+# Skip whole module if reporting extras (pydantic) are not installed
+spec = importlib.util.find_spec("pydantic")
+pytestmark = pytest.mark.skipif(spec is None, reason="reporting extras not installed (pydantic missing)")
+
 from atlasexplorer.reporting.parser import parse_summary_json
 from atlasexplorer.reporting.derive import apply_derivations
 from atlasexplorer.reporting.thresholds import apply_thresholds
