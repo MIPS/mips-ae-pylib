@@ -162,6 +162,8 @@ uv pip install -e .[reporting]
 
 The reporting CLI consumes a generated `summary.json` and optionally a baseline.
 
+New to the reporting code? See the junior-friendly guide: `atlasexplorer/reporting/README.md`.
+
 Basic usage:
 ```bash
 atlasexplorer-report "path/to/summary.json"
