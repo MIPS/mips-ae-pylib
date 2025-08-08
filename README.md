@@ -334,6 +334,22 @@ def derive_foo(values):
 | Missing baseline deltas | Forgot `--baseline` flag | Add baseline path |
 | Percent delta all `inf` | Baseline metric zero | Use absolute delta or adjust baseline |
 
+### Exports from Example Runners
+- Error: "Reporting extras not installed" when using `--export`
+      - Cause: example scripts lazy-import reporting modules only when exporting
+      - Fix: `uv pip install -e .[reporting]`
+
+- I used `--export zip` but can’t find all files
+      - Behavior: the ZIP includes `report.json`, `report.md`, `report.html` (rich), and `report_basic.html` (basic)
+      - Tip: unzip and inspect contents; file names are fixed as above
+
+- Where does `--out` write by default?
+      - If `--out` is omitted, outputs are created next to the produced `summary.json` inside the experiment’s `reports/summary/` folder
+
+- Rich HTML seems heavy or missing charts
+      - Cause: Plotly is optional
+      - Fix: ensure `[reporting]` extras are installed; otherwise open `report_basic.html`
+
 ---
 
 ## 🧩 13. Extending (Thresholds / Rules)
