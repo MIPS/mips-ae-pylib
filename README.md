@@ -79,8 +79,9 @@ uv run examples/ae_multicore.py --elf resources/mandelbrot_rv64_O0.elf resources
 2. **Set up environment and install dependencies:**
    ```bash
    uv sync --group notebooks             # Install all dependencies including Jupyter notebook support
+   uv pip install -e .                   # Install the atlasexplorer package in development mode
    ```
-   > 💡 **Note**: This project uses modern `uv` dependency management. The `uv sync` command automatically creates a virtual environment and installs all dependencies.
+   > 💡 **Note**: This project uses modern `uv` dependency management. The `uv sync` command automatically creates a virtual environment and installs all dependencies. The `uv pip install -e .` command installs the `atlasexplorer` package so it can be imported from anywhere in the project.
 
 3. **Configure your ATLAS Explorer credentials:**
    ```bash
@@ -265,6 +266,9 @@ uv run python -m pytest -s tests/test_ae_multicore.py
 # Install all dependencies including development tools
 uv sync --group dev
 
+# Install the package in development mode
+uv pip install -e .
+
 # Run tests with coverage
 uv run python -m pytest -s --cov=atlasexplorer
 
@@ -442,7 +446,7 @@ uv run examples/ae_multicore.py --core "I8500_(4_threads)" --expdir scaling_4cor
 ### 🧪 **Custom Analysis**
 
 ```python
-from atlasexplorer.atlasexplorer import AtlasExplorer, Experiment
+from atlasexplorer import AtlasExplorer, Experiment
 
 # Custom experiment workflow
 ae = AtlasExplorer(channel="development")  

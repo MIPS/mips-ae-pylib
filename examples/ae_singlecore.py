@@ -28,7 +28,7 @@ import argparse
 import locale
 import os
 import sys
-from atlasexplorer.atlasexplorer import AtlasExplorer, Experiment
+from atlasexplorer import AtlasExplorer, Experiment
 from dotenv import load_dotenv
 
 def main():

@@ -1,27 +1,22 @@
 """
-Test: ATLAS Explorer Single Core Experiment
+Test module for single core ATLAS Explorer experiments.
 
-This test demonstrates how to run a single core experiment using the ATLAS Explorer Python library.
-
-Configuration:
-    - Set the environment variable MIPS_ATLAS_CONFIG to '<apikey>:<channel>:<region>'
-    - Or run 'uv run atlasexplorer/atlasexplorer.py configure' to set up your credentials interactively
-
-Usage:
-    python -m pytest -s tests/test_ae_singlecore.py
-
-This test will:
-    - Create an AtlasExplorer instance using credentials from the environment
-    - Create a new experiment in the 'myexperiments' directory
-    - Add a workload ELF file
-    - Set the core type
-    - Run the experiment and check the total cycles
+This test module validates the functionality of single core experiments
+using the ATLAS Explorer Python library.
 """
-from atlasexplorer.atlasexplorer import AtlasExplorer, Experiment
-import locale
+
+import json
+import os
+import pytest
+import shutil
+import tempfile
+from unittest.mock import Mock, patch
 from dotenv import load_dotenv
 
+# Load environment variables from .env file
 load_dotenv()
+
+from atlasexplorer import AtlasExplorer, Experiment
 
 
 def test_singlecore():

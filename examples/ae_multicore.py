@@ -29,7 +29,7 @@ import locale
 import os
 import sys
 from dotenv import load_dotenv
-from atlasexplorer.atlasexplorer import AtlasExplorer, Experiment
+from atlasexplorer import AtlasExplorer, Experiment
 
 # Load environment variables from .env file
 load_dotenv()
