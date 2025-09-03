@@ -6,6 +6,7 @@ using the ATLAS Explorer Python library.
 """
 
 import json
+import locale
 import os
 import pytest
 import shutil
